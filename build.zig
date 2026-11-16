@@ -86,6 +86,7 @@ pub fn build(b: *std.Build) void {
         "FX_TEST_PRODUCT_EXE",
         b.getInstallPath(.bin, "fx"),
     );
+    run_exe_tests.setEnvironmentVariable("FX_TEST_ZIG_EXE", b.graph.zig_exe);
 
     const test_step = b.step("test", "Run tests");
     test_step.dependOn(&run_exe_tests.step);

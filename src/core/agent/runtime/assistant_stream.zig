@@ -1463,10 +1463,19 @@ test "streamed presentation preserves ANSI OSC 8 code fence and table spans" {
     defer environ.deinit();
     try environ.put(ansi_span_fixture_env, "1");
 
+    const zig_exe = std.process.Environ.getAlloc(
+        std.testing.environ,
+        alloc,
+        "FX_TEST_ZIG_EXE",
+    ) catch |err| switch (err) {
+        error.EnvironmentVariableMissing => try alloc.dupe(u8, "zig"),
+        else => return err,
+    };
+    defer alloc.free(zig_exe);
     const cwd = try std.process.currentPathAlloc(std.testing.io, alloc);
     defer alloc.free(cwd);
     const result = try std.process.run(alloc, std.testing.io, .{
-        .argv = &.{ "zig", "test", "-lc", "-Mroot=src/main.zig", "--test-filter", ansi_span_test_name },
+        .argv = &.{ zig_exe, "test", "-lc", "-Mroot=src/main.zig", "--test-filter", ansi_span_test_name },
         .cwd = .{ .path = cwd },
         .environ_map = &environ,
         .stdout_limit = .limited(64 * 1024),
